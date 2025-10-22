@@ -1,0 +1,1216 @@
+{
+  "name": "SECP",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://puppeteer-oenx.onrender.com/lrd",
+        "options": {}
+      },
+      "id": "1a4adb0b-cf1b-44ff-93e5-bf8ce282cafe",
+      "name": "lrd",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3312,
+        -144
+      ],
+      "executeOnce": false,
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener el número de procedimiento y la descripción del elemento actual\nconst procedureNumber = $('Globalizar').item.json.numero_procedimiento;\nconst description = $('Globalizar').item.json.descripcion;\n\n// Crear un objeto con los datos actuales\nreturn [\n  {\n    json: {\n      numero_procedimiento: procedureNumber,\n      descripcion: description || \"Descripción no encontrada\"\n    }\n  }\n];\n"
+      },
+      "id": "a51d9e19-38c3-4325-a733-83ca19b22ff8",
+      "name": "1More",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1024,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener el número de procedimiento y la descripción del elemento actual\nconst procedureNumber =\n$('Globalizar').item.json.numero_procedimiento;\nconst description = $('Globalizar').item.json.descripcion;\n// Crear un objeto con los datos actuales\nreturn [\n  {\n    json: {\n      numero_procedimiento: procedureNumber,\n      descripcion: description || \"Descripción no encontrada\"\n    }\n  }\n];\n"
+      },
+      "id": "3fe61cac-0461-492b-bf38-77ae02322777",
+      "name": "NuevasL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1440,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Guarda todos los items del último run en un array\nconst allItemsFromLastRun = items.map(item => item.json);\n\n// Envía el array como un único item al siguiente nodo\nreturn [\n  {\n    json: {\n      lastRunBatch: allItemsFromLastRun, // Todos los items del último run\n    }\n  }\n];"
+      },
+      "id": "ce226d49-80e9-46d8-b1dd-1a6fe0666667",
+      "name": "Consolidar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -848,
+        224
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Verificar si $json contiene el array directamente o una propiedad con el array\nconst inputData = Array.isArray($json) ? $json : $json.body || $json.lastRunBatch || null;\n\n// Validar que el array fue encontrado\nif (!inputData || !Array.isArray(inputData)) {\n  throw new Error(\"No se encontró un array válido en el JSON recibido.\");\n}\n\n// Si el array tiene la estructura de 'lastRunBatch', accedemos a su primer elemento\nconst batchData = inputData[0]?.lastRunBatch || inputData;\n\n// Validar que batchData es un array\nif (!Array.isArray(batchData)) {\n  throw new Error(\"'lastRunBatch' debe ser un array o no se encontró.\");\n}\n\n// Crear una lista de elementos para enviar al loop\nconst items = batchData.map((item) => {\n  return {\n    json: item, // Cada elemento será un objeto JSON individual\n  };\n});\n\n// Retornar los elementos procesados\nreturn items;\n"
+      },
+      "id": "14fdef59-e2d0-4203-9039-a811b54acb22",
+      "name": "ProcesarConsolidacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        256
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "30a22bc9-ee5c-45ca-995b-c5b3c8a079ec",
+      "name": "Finish",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        608,
+        880
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "55ee657d-ceb5-4098-b261-073417139571",
+      "name": "Do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -2496,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "83ccca6e-1c35-4c78-9cdf-d8440dc0cc1b",
+      "name": "Loop",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2736,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "bec23144-6c42-4af8-9310-5c3249d5e32b",
+      "name": "Loop 2",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1264,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "lumana@deinsaglobal.com",
+        "toEmail": "luis14701470@gmail.com",
+        "subject": "Potencial licitación - SECP",
+        "emailFormat": "text",
+        "text": "=Estimados,\n\nEstá disponible una nueva licitación de interés en el SECP:\n  • Número de procedimiento: {{ $('IA').item.json.numero_procedimiento }}\n  • Descripción: {{ $('IA').item.json.descripcion }}\n\nPara más detalles, pueden acceder directamente al sitio oficial del SECP a través del siguiente enlace: https://comunidad.comprasdominicana.gob.do/Public/Tendering/ContractNoticeManagement/Index?currentLanguage=es&Country=DO&Theme=DGCP&Page=Login\n\nAtentamente,\nEquipo de Automatización",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "e77daebc-4fae-48ce-9cbc-d57abe716303",
+      "name": "Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        752
+      ],
+      "notesInFlow": true,
+      "webhookId": "c4ce077c-346d-4742-9a7c-73c1af0a29fd",
+      "credentials": {
+        "smtp": {
+          "id": "fW3kkTgPWzboaisd",
+          "name": "SMTP account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "254125ac-71cc-4d16-b494-90d90d4a1572",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "=1",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b4ffbf60-383c-4b12-9521-77be89c373ce",
+      "name": "Interesa?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        880
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "e519838a-305a-4d86-90d9-e215bcb7c78f",
+      "name": "No",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        400,
+        1008
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e6c14130-f6a9-47ec-a20d-27453e95e92b",
+              "leftValue": "={{ $json.reference }}",
+              "rightValue": "={{ $('Globalizar').item.json.numero_procedimiento }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "id": "d52b5f9a-f56e-4365-bcc0-c29776ea0480",
+      "name": "Ya la tenemos?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2144,
+        288
+      ],
+      "alwaysOutputData": false,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fa6496dc-717e-4d74-b9d5-c56a4d7fc60a",
+              "name": "numero_procedimiento",
+              "value": "={{ $json.numero_procedimiento }}",
+              "type": "string"
+            },
+            {
+              "id": "c478b740-d925-4d45-9156-3beb6387a3d5",
+              "name": "descripcion",
+              "value": "={{ $json.descripcion }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "eb28cba4-c95b-4e57-bef6-eec44f088252",
+      "name": "IA",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -288,
+        256
+      ],
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "045f923d-b077-4b93-b360-e30aecf411e7",
+              "name": "contar",
+              "value": "={{ $runIndex + 1 }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f4072f3a-3724-437c-821c-a848ba63364e",
+      "name": "Contar",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1600,
+        336
+      ],
+      "notesInFlow": true
+    },
+    {
+      "parameters": {},
+      "id": "216eedea-2913-4bc8-810c-b90b56837c43",
+      "name": "Nop",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c9612d85-57fe-486e-a0fe-01122e63706a",
+              "leftValue": "={{ $('Contar').last().json.contar }}",
+              "rightValue": "={{ $json.lastRunBatch.length }}",
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f9945cfb-cb43-4263-8e03-1845472faa0d",
+      "name": "EstanTodas?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -656,
+        224
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "dccfaef4-75fa-4891-a3d7-accaa3cc01fc",
+      "name": "Apilar",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -1024,
+        224
+      ],
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "content": "# Extraer información \n### Este módulo se encarga de iniciar el flujo, extraer la información de la pagina web, procesarla, y limpiarla para posteriormente analizarla. ###",
+        "height": 545.7725919557951,
+        "width": 540.6168136324088,
+        "color": 6
+      },
+      "id": "7ac479ae-89fa-482a-9e9d-159d4ef1e3b6",
+      "name": "Sticky Note13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3328,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "content": "# Almacenar datos\n### El primer ciclo de este módulo es responsable de descomponer la lista ingresada en objetos independientes y comprobar si están en nuestra base de datos, posteriormente se encarga de almacenar aquellos elementos que no se encuentran en nuestra base de datos, además de contar cada uno de los objetos nuevos y almacenarlos\n### en una variable para usar esta información en el segundo ciclo de este módulo, el cual se encarga de rearmar la lista de objetos, consolidarla y procesarla, para que la inteligencia artificial pueda analizarla en un solo input.\n",
+        "height": 546.0796510372413,
+        "width": 2623.0758524223506,
+        "color": 5
+      },
+      "id": "dacc08cc-06b8-4e90-9e24-fa75cbef7a4e",
+      "name": "Sticky Note7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2784,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "content": "# Analizar licitación\n### Este módulo final recibe una lista de licitaciones, la cual el agente de inteligencia artificial se encargará de analizar para notificarnos si identifica una licitación de interés para Deinsa Global.  ",
+        "height": 547.8163990420187,
+        "width": 928.7565051372301
+      },
+      "id": "72577899-e9c1-4ea3-bf83-8e470790bfac",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        640
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1o9fowz4KA8A9KPD_rMyCti8lGSRK45Sq87TgG2OHnT4/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1583562132,
+          "mode": "list",
+          "cachedResultName": "SECP",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1o9fowz4KA8A9KPD_rMyCti8lGSRK45Sq87TgG2OHnT4/edit#gid=1583562132"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "=reference",
+              "lookupValue": "={{ $('Globalizar').item.json.numero_procedimiento }}"
+            }
+          ]
+        },
+        "combineFilters": "OR",
+        "options": {}
+      },
+      "id": "680f71d0-79f8-486a-8b63-881d758cd588",
+      "name": "Revisar",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2320,
+        288
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": false,
+      "notesInFlow": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2BmhcBXmvJvBxpPU",
+          "name": "Licitaciones"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1o9fowz4KA8A9KPD_rMyCti8lGSRK45Sq87TgG2OHnT4/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1583562132,
+          "mode": "list",
+          "cachedResultName": "SECP",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1o9fowz4KA8A9KPD_rMyCti8lGSRK45Sq87TgG2OHnT4/edit#gid=1583562132"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "reference": "={{ $('Globalizar').item.json.numero_procedimiento }}"
+          },
+          "matchingColumns": [
+            "Numero_de_procedimientos"
+          ],
+          "schema": [
+            {
+              "id": "reference",
+              "displayName": "reference",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "useAppend": true
+        }
+      },
+      "id": "5aea82ed-b873-4ca1-8aab-24fc97e43e93",
+      "name": "Guardar",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1760,
+        336
+      ],
+      "notesInFlow": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2BmhcBXmvJvBxpPU",
+          "name": "Licitaciones"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 6 * * *"
+            }
+          ]
+        }
+      },
+      "id": "409ca3d3-07fc-4768-8561-b00303279a11",
+      "name": "Schedule Trigger1",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -3312,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "id": "7e8cb6b2-2475-4236-8445-33fd5bbaeddb",
+      "name": "Wait2",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2496,
+        288
+      ],
+      "webhookId": "a8c1f7a6-45cd-4cac-ac01-53191735d105"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "id": "9d99b8f6-399a-40b6-914d-36594c218775",
+      "name": "Wait3",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1920,
+        336
+      ],
+      "webhookId": "923b1b94-b6ff-4585-bc53-c9cfd9c50e63"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://datosabiertos.dgcp.gob.do/api/v1/commercial-activity",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"filter\": {\n   \n    \"rubro\": 43230000,\n    \"page\": 1,\n    \"limit\": 200\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3152,
+        240
+      ],
+      "id": "95dd28dd-98c8-436a-9bee-84ae564c79ec",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "payload.content.items",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -3024,
+        240
+      ],
+      "id": "1572ed0d-636b-4dfe-a9a3-a7ade4050bb0",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fa6496dc-717e-4d74-b9d5-c56a4d7fc60a",
+              "name": "numero_procedimiento",
+              "value": "={{ $json.reference }}",
+              "type": "string"
+            },
+            {
+              "id": "c478b740-d925-4d45-9156-3beb6387a3d5",
+              "name": "descripcion",
+              "value": "={{ $json.description }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3b737334-92a3-4236-866c-eb1507a0ae5f",
+      "name": "GlobalizarT",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3168,
+        -144
+      ],
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fa6496dc-717e-4d74-b9d5-c56a4d7fc60a",
+              "name": "numero_procedimiento",
+              "value": "={{ $json.CODIGO_PROCESO }}",
+              "type": "string"
+            },
+            {
+              "id": "c478b740-d925-4d45-9156-3beb6387a3d5",
+              "name": "descripcion",
+              "value": "={{ $json.DESCRIPCION_PROCESO }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "999a4575-d537-4d4b-a86c-0c76c32972ae",
+      "name": "Globalizar",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2896,
+        240
+      ],
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Te voy a pasar una lista de JSONs, responde SOLAMENTE 1 o 2:\n\nResponder SOLAMENTE con 1 si la licitacion es logicamente viable para una empresa que busca vender un software de GESTION EMPRESARIAL, PLANIFICACION ESTRATEGICA DE PROYECTOS, GOBERNANZA, RIESGOS, CUMPLIMIENTO NORMATIVO, QUE CUMPLE NORMAS ISO 27001, 22301, 9001 y COBIT.\n\nResponder SOLAMENTE 2 si la licitación no tiene nada que ver con el punto anterior.\nDescripción de la licitación:\n{{ $('IA').item.json.descripcion }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -64,
+        880
+      ],
+      "id": "84e5fecb-b41c-4f23-8f55-6b7aeabf27a5",
+      "name": "AI Agent",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {
+          "temperature": 0.2,
+          "topP": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        1040
+      ],
+      "id": "affe8826-ed3f-4177-8884-1edc54bc2b75",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "xC0fwqFLZitRj0LF",
+          "name": "Api Deinsa"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Accedemos a todos los items que llegan al nodo\nconst items = $input.all();\n\n// Obtenemos los datos en un array simple\nconst data = items.map(item => item.json);\n\n// Unificamos todo en un solo objeto\nreturn [\n  {\n    json: {\n      procedimientos: data\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        256
+      ],
+      "id": "c4244567-f173-4b5f-80c8-5239643ccf82",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Tomamos la salida del nodo anterior\nlet raw = $json.output;\n\n// Quitamos los backticks y el lenguaje\nraw = raw.replace(/```json\\n?/, \"\").replace(/```$/, \"\").trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  return []; // si no se puede parsear, no devuelve nada\n}\n\n// Caso cuando no hay licitaciones relevantes\nif (parsed.resultado === 2 || !parsed.licitaciones || parsed.licitaciones.length === 0) {\n  return []; // 🔥 aquí no devuelve nada\n}\n\n// Caso cuando sí hay licitaciones relevantes\nconst listado = parsed.licitaciones\n  .map(l => `• ${l.numero_procedimiento}: ${l.descripcion}`)\n  .join(\"\\n\");\n\nreturn [{\n  json: { mensaje: `Licitaciones relevantes:\\n\\n${listado}` }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        256
+      ],
+      "id": "6e69948e-9c69-4a53-a3a7-045023fcdad2",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "content": "# Analizar licitación\n### Este módulo final recibe una lista de licitaciones, la cual el agente de inteligencia artificial se encargará de analizar para notificarnos si identifica una licitación de interés para Deinsa Global.  ",
+        "height": 547.8163990420187,
+        "width": 923.6284503307568
+      },
+      "id": "166e78b8-8ceb-43cd-b2fe-2647cbabbc0a",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fa6496dc-717e-4d74-b9d5-c56a4d7fc60a",
+              "name": "numero_procedimiento",
+              "value": "={{ $json.numero_procedimiento }}",
+              "type": "string"
+            },
+            {
+              "id": "c478b740-d925-4d45-9156-3beb6387a3d5",
+              "name": "descripcion",
+              "value": "={{ $json.descripcion }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "81089588-83a9-4e89-a217-94672008a7e3",
+      "name": "IA1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -144,
+        256
+      ],
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Te paso una lista de licitaciones. \nEvalúa cada una y responde SOLO en formato JSON:\n\n- Incluye en un array las licitaciones que SÍ sean viables para una empresa que vende software de GESTIÓN EMPRESARIAL, PLANIFICACIÓN ESTRATÉGICA DE PROYECTOS, GOBERNANZA, RIESGOS, CUMPLIMIENTO NORMATIVO (ISO 27001, 22301, 9001, COBIT).\n\n- Si ninguna aplica, responde exactamente: { \"resultado\": 2 }\n- Si hay alguna que aplica, responde así:\n{ \n  \"resultado\": 1, \n  \"licitaciones\": [\n    { \"numero_procedimiento\": \"2025-1-42-01-08-CL-000806\", \"descripcion\": \"SERVICIO DE COMIDA PARA EL DIA DE LA SOLIDARIDAD, JORNADA DE VOLUNTARIOS INSTITUCIONAL ORIENTADA A CONTRIBUIR CON LA RECUPERACIÓN DE ESPACIOS ESCOLARES.\" },\n    ...\n  ]\n}\n\nLista de licitaciones:\n{{ $json.toJsonString() }}\n",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        256
+      ],
+      "id": "2308835b-2f95-4d83-92a0-d77b0a52372e",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {
+          "temperature": 0.2,
+          "topP": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        240,
+        432
+      ],
+      "id": "c635534a-571a-467e-a4ec-2317cb490d8f",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "xC0fwqFLZitRj0LF",
+          "name": "Api Deinsa"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "lumana@deinsaglobal.com",
+        "toEmail": "luis14701470@gmail.com",
+        "subject": "Potencial licitación - SECP",
+        "emailFormat": "text",
+        "text": "=Estimados,  Está disponible una/s nueva/s licitación/es de interés en SECP:  \n{{ $json.mensaje }}\n\nPara más detalles, pueden acceder directamente al sitio oficial del SECP a través del siguiente enlace: https://comunidad.comprasdominicana.gob.do/Public/Tendering/ContractNoticeManagement/Index?currentLanguage=es&Country=DO&Theme=DGCP&Page=Login\n\nAtentamente,\nEquipo de Automatización",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "57e51958-264c-451e-af60-23b5e13fe131",
+      "name": "Mandar email1",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        640,
+        256
+      ],
+      "webhookId": "f361241e-42ed-43b9-ac6b-e4ab96832530",
+      "credentials": {
+        "smtp": {
+          "id": "loAom9o75gp8ofUq",
+          "name": "Correo CR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Version 1.0\n**Reemplazada por la actual"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        816,
+        656
+      ],
+      "typeVersion": 1,
+      "id": "4c988398-f40d-4ced-8826-c77a89781ab8",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "lrd": {
+      "main": [
+        [
+          {
+            "node": "GlobalizarT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1More": {
+      "main": [
+        [
+          {
+            "node": "Loop 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NuevasL": {
+      "main": [
+        [
+          {
+            "node": "Loop 2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consolidar": {
+      "main": [
+        [
+          {
+            "node": "EstanTodas?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ProcesarConsolidacion": {
+      "main": [
+        [
+          {
+            "node": "IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop": {
+      "main": [
+        [
+          {
+            "node": "Do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop 2": {
+      "main": [
+        [
+          {
+            "node": "Apilar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "1More",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email": {
+      "main": [
+        [
+          {
+            "node": "Finish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Interesa?": {
+      "main": [
+        [
+          {
+            "node": "Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No": {
+      "main": [
+        [
+          {
+            "node": "Finish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ya la tenemos?": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA": {
+      "main": [
+        [
+          {
+            "node": "IA1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contar": {
+      "main": [
+        [
+          {
+            "node": "NuevasL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EstanTodas?": {
+      "main": [
+        [
+          {
+            "node": "ProcesarConsolidacion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Nop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apilar": {
+      "main": [
+        [
+          {
+            "node": "Consolidar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Revisar": {
+      "main": [
+        [
+          {
+            "node": "Ya la tenemos?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar": {
+      "main": [
+        [
+          {
+            "node": "Contar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Revisar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Guardar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Globalizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Globalizar": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Interesa?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Mandar email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f6581598-515d-456a-928c-7c592adfc8ea",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b9ce82d6d20dd43ea89e610a12880b37a4a97f1ad31c7ee42c43d2051bd39545"
+  },
+  "id": "oBAN8Pge4vZ65Fd5",
+  "tags": []
+}
